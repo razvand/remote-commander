@@ -45,7 +45,7 @@ while read wait timeout host port username command outfile errfile; do
         ssh -n -l "$username" -p "$port" "$host" "$command"
     else
         command="$command &"
-        ssh -n -f -l "$username" -p "$port" "$host" "'$command'"
+        ssh -n -f -l "$username" -p "$port" "$host" "$command"
     fi
     set +x
 done
