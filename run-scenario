@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# Run a set of commands on remote hosts.
+# Commands are provided either at standard input or as a file.
+# Script runs continuously until all commands are run.
+# SSH connectivity to remote hosts is required.
+
+# Expected input is:
+# timeout,host,port,username,command,outfile,errfile
+#
+# After `timeout' seconds connect through SSH to `host' on `port' using
+# `username' and run `command' redirecting standard output to `outfile' and
+# standard error to `errfile'. If `errfile' value is "DUP" then standard error
+# will be redirected to `outfile' as well.
+
+if test $# -ge 2; then
+    echo "Usage: $0 [commands-file]" 1>&2
+    exit 1
+fi
+
+# If list of commands is passed as a file argument, read commands from there.
+# Otherwise, use standard input.
+# Use exec <"$1" to redirect the file argument to standard input.
+if test $# -eq 1; then
+    if ! test -f "$1"; then
+        echo "Usage: $0 [commands-file]" 1>&2
+        echo "    argument must be a file" 1>&2
+        exit 1
+    fi
+    exec <"$1"
+fi
+
+IFS=','     # Comma is the field separator.
+while read timeout host port username command outfile errfile; do
+    echo "timeout: $timeout"
+    echo "host: $host"
+    echo "port: $port"
+    echo "username: $username"
+    echo "command: $command"
+    echo "outfile: $outfile"
+    echo "errfile: $errfile"
+done
