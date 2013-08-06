@@ -8,7 +8,7 @@
 # Expected input is:
 # timeout,host,port,username,command,outfile,errfile
 #
-# After `timeout' seconds connect through SSH to `host' on `port' using
+# After `timeout' minutes connect through SSH to `host' on `port' using
 # `username' and run `command' redirecting standard output to `outfile' and
 # standard error to `errfile'. If `errfile' value is "DUP" then standard error
 # will be redirected to `outfile' as well.
@@ -32,11 +32,17 @@ fi
 
 IFS=','     # Comma is the field separator.
 while read timeout host port username command outfile errfile; do
-    echo "timeout: $timeout"
-    echo "host: $host"
-    echo "port: $port"
-    echo "username: $username"
-    echo "command: $command"
-    echo "outfile: $outfile"
-    echo "errfile: $errfile"
+    command="$command > $outfile"
+    if test "$errfile" = "DUP"; then
+        command="$command 2>&1"
+    else
+        command="$command 2> $errfile"
+    fi
+    set -x
+    if test "$timeout" = "wait"; then
+        ssh -n -l "$username" -p "$port" "$host" "$command"
+    else
+        echo ssh -n -f -l "$username" -p "$port" "$host" "'$command'" | at now + "$timeout" minutes
+    fi
+    set +x
 done
