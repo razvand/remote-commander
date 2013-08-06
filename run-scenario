@@ -6,12 +6,13 @@
 # SSH connectivity to remote hosts is required.
 
 # Expected input is:
-# timeout,host,port,username,command,outfile,errfile
+# wait,timeout,host,port,username,command,outfile,errfile
 #
-# After `timeout' minutes connect through SSH to `host' on `port' using
+# After `timeout' seconds connect through SSH to `host' on `port' using
 # `username' and run `command' redirecting standard output to `outfile' and
 # standard error to `errfile'. If `errfile' value is "DUP" then standard error
 # will be redirected to `outfile' as well.
+# If `wait', wait for command to complete. Otherwise, run in background.
 
 if test $# -ge 2; then
     echo "Usage: $0 [commands-file]" 1>&2
@@ -31,7 +32,7 @@ if test $# -eq 1; then
 fi
 
 IFS=','     # Comma is the field separator.
-while read timeout host port username command outfile errfile; do
+while read wait timeout host port username command outfile errfile; do
     command="$command > $outfile"
     if test "$errfile" = "DUP"; then
         command="$command 2>&1"
@@ -39,10 +40,12 @@ while read timeout host port username command outfile errfile; do
         command="$command 2> $errfile"
     fi
     set -x
-    if test "$timeout" = "wait"; then
+    sleep $timeout
+    if test "$wait" = "wait"; then
         ssh -n -l "$username" -p "$port" "$host" "$command"
     else
-        echo ssh -n -f -l "$username" -p "$port" "$host" "'$command'" | at now + "$timeout" minutes
+        command="$command &"
+        ssh -n -f -l "$username" -p "$port" "$host" "'$command'"
     fi
     set +x
 done
