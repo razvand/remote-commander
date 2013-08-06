@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Functions to be used in scenarios.
+
+# Use SSH to run a command on a remote end. Run command in background and
+# detach connection.
+# Parameters are: username, remote host, SSH port and command
+function run_remote()
+{
+}
